@@ -1,0 +1,33 @@
+{
+  "name": "interview-bot",
+  "version": "0.0.1",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx src/server.ts",
+    "build": "tsc",
+    "start": "node dist/server.js",
+    "test": "vitest",
+    "test:watch": "vitest --watch",
+    "test:coverage": "vitest --coverage"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.19.0",
+    "@typescript-eslint/eslint-plugin": "^8.22.0",
+    "@typescript-eslint/parser": "^8.22.0",
+    "eslint": "^9.19.0",
+    "fastify-cli": "^7.3.0",
+    "globals": "^15.14.0",
+    "typescript": "^5.7.3",
+    "typescript-eslint": "^8.22.0",
+    "vitest": "^3.0.4"
+  },
+  "dependencies": {
+    "@types/node": "^22.12.0",
+    "fastify": "^5.2.1",
+    "tsx": "^4.19.2"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "description": "An AI-powered chatbot that evaluates knowledge on a given topic by asking questions and assessing responses."
+}
