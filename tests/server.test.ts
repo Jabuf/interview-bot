@@ -1,5 +1,5 @@
 import { describe, test, expect } from "vitest";
-import { fastify } from "../src/server";
+import { fastify } from "../src/server.js";
 
 describe("Fastify Server", () => {
   test("GET / should return API running message", async () => {
