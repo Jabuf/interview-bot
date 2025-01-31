@@ -1,5 +1,7 @@
 import Fastify from "fastify";
-import {modelRoutes} from "./routes/models.js";
+import {questionRoutes} from "./routes/models/questions.js";
+import {answerRoutes} from "./routes/models/answers.js";
+import {API_PREFIX} from "./config/constants.js";
 
 export const fastify = Fastify({
     logger: {
@@ -15,7 +17,8 @@ fastify.get("/", async () => {
     return {message: "Interview Bot API is running!"};
 });
 
-fastify.register(modelRoutes);
+fastify.register(questionRoutes, {prefix: `${API_PREFIX}/models/questions`});
+fastify.register(answerRoutes, {prefix: `${API_PREFIX}/models/answers`});
 
 fastify.ready(() => {
     fastify.log.info(fastify.printRoutes())
