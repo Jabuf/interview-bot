@@ -1,5 +1,5 @@
 import Fastify from "fastify";
-import {botRoutes} from "./routes/bot.js";
+import {modelRoutes} from "./routes/models.js";
 
 export const fastify = Fastify({
     logger: {
@@ -15,7 +15,7 @@ fastify.get("/", async () => {
     return {message: "Interview Bot API is running!"};
 });
 
-fastify.register(botRoutes);
+fastify.register(modelRoutes);
 
 
 const start = async () => {
