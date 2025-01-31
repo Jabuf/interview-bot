@@ -17,6 +17,10 @@ fastify.get("/", async () => {
 
 fastify.register(modelRoutes);
 
+fastify.ready(() => {
+    fastify.log.info(fastify.printRoutes())
+})
+
 
 const start = async () => {
     try {
