@@ -1,38 +1,51 @@
 import ollama from "ollama";
-import { getPrompt } from "../utils/promptUtils.js";
+import {getPrompt} from "../utils/promptUtils.js";
+import {parseModelResponse} from "../utils/jsonUtils.js";
 
 /**
- * Evaluates answers using multiple models.
- * Each model receives all answers (including its own) for evaluation.
+ * Represents the structure of a model's evaluations.
+ */
+type ModelEvaluations = Record<string, { score: number; feedback: string }> | { error: string };
+
+/**
+ * Evaluate model answers using other models.
  * @param models - List of model names
  * @param answers - Object containing answers from each model
- * @returns Evaluation results with scores and feedback
+ * @returns Evaluation scores and feedback per model
  */
-export async function evaluateAnswers(models: string[], answers: Record<string, string[]>) {
-  const evaluations: Record<string, Record<string, { score: number; feedback: string }>> = {};
+export async function evaluateAnswers(models: string[], answers: Record<string, Record<string, string>>) {
+    const evaluations: Record<string, ModelEvaluations> = {};
 
-  await Promise.all(
-    models.map(async (evaluator) => {
-      try {
-        // Construct the evaluation prompt
-        const formattedAnswers = Object.entries(answers)
-          .map(([model, modelAnswers]) => `${model}:\n${modelAnswers.join("\n")}`)
-          .join("\n\n");
+    await Promise.all(
+        models.map(async (model) => {
+            try {
+                const prompt = getPrompt("evaluate_answers", {answers: JSON.stringify(answers)});
 
-        const prompt = getPrompt("evaluate_answers", { answers: formattedAnswers });
+                const response = await ollama.chat({
+                    model,
+                    messages: [{role: "user", content: prompt}],
+                });
 
-        const response = await ollama.chat({
-          model: evaluator,
-          messages: [{ role: "user", content: prompt }],
-        });
+                // Clean and parse response
+                const jsonResponse = parseModelResponse<{
+                    evaluations: Record<string, { score: number; feedback: string }>
+                }>(
+                    response.message.content,
+                    {evaluations: {}}
+                );
 
-        // Expecting the response to be in JSON format with scores & feedback
-        evaluations[evaluator] = JSON.parse(response.message.content);
-      } catch (error) {
-        evaluations[evaluator] = { error: { score: 0, feedback: `Error: ${(error as Error).message}` } };
-      }
-    })
-  );
+                if (jsonResponse.evaluations && typeof jsonResponse.evaluations === "object") {
+                    evaluations[model] = jsonResponse.evaluations;
+                } else {
+                    console.error(`Unexpected JSON format from ${model}:`, jsonResponse);
+                    evaluations[model] = {error: "Invalid response format"};
+                }
+            } catch (error) {
+                console.error(`Error evaluating answers with ${model}:`, error);
+                evaluations[model] = {error: `Error: ${(error as Error).message}`};
+            }
+        })
+    );
 
-  return evaluations;
+    return evaluations;
 }

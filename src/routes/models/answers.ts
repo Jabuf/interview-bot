@@ -1,20 +1,20 @@
 import {FastifyInstance} from "fastify";
-import {fetchModelResponses} from "../../services/modelService.js";
 import {evaluateAnswers} from "../../services/evaluationService.js";
+import {fetchModelAnswers} from "../../services/answerService.js";
 
 export async function answerRoutes(fastify: FastifyInstance) {
     fastify.post("/ask", async (request, reply) => {
-        const {models, question} = request.body as { models: string[]; question: string };
+        const {models, questions} = request.body as { models: string[]; questions: string[] };
 
         if (!models || models.length === 0) {
             return reply.status(400).send({error: "At least one model is required"});
         }
-        if (!question) {
-            return reply.status(400).send({error: "Question is required"});
+        if (!questions || questions.length === 0) {
+            return reply.status(400).send({error: "At least one question is required"});
         }
 
-        const responses = await fetchModelResponses(models, question);
-        return reply.send({responses});
+        const answers = await fetchModelAnswers(models, questions);
+        return reply.send({answers});
     });
 
     fastify.post("/evaluate", async (request, reply) => {

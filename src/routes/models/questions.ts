@@ -1,5 +1,5 @@
 import {FastifyInstance} from "fastify";
-import {fetchMergedQuestions} from "../../services/modelService.js";
+import {fetchMergedQuestions} from "../../services/questionService.js";
 
 export async function questionRoutes(fastify: FastifyInstance) {
     fastify.post("/generate", async (request, reply) => {

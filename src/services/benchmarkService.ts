@@ -9,19 +9,23 @@ import {evaluateAnswers} from "./evaluationService.js";
  * @returns The benchmarking results including questions, answers, and evaluations
  */
 export async function runBenchmark(models: string[], topic: string) {
-  // Step 1: Generate and merge questions
-  const questions = await fetchMergedQuestions(models, topic);
+    // Step 1: Generate and merge questions
+    const questionsByModel = await fetchMergedQuestions(models, topic);
 
-  // Step 2: Get answers from each model
-  const answers = await fetchModelAnswers(models, questions);
+    // Step 2: Flatten questions into a unique set for consistency
+    const allQuestions = [...new Set(Object.values(questionsByModel).flat())];
 
-  // Step 3: Evaluate answers using all models
-  const evaluations = await evaluateAnswers(models, answers);
+    // Step 3: Get answers from each model
+    const answers = await fetchModelAnswers(models, allQuestions);
 
-  return {
-    topic,
-    questions,
-    answers,
-    evaluations,
-  };
+    // Step 4: Evaluate the answers
+    const evaluations = await evaluateAnswers(models, answers);
+
+    return {
+        topic,
+        questionsByModel,
+        mergedQuestions: allQuestions,
+        answers,
+        evaluations,
+    };
 }
