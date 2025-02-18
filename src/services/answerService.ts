@@ -1,6 +1,7 @@
 import ollama from "ollama";
 import {getPrompt} from "../utils/promptUtils.js";
 import {parseModelResponse} from "../utils/jsonUtils.js";
+import {logger} from "../utils/logger.js";
 
 /**
  * Represents the structure of a model's answers.
@@ -24,12 +25,12 @@ export async function fetchModelAnswers(models: string[], questions: string[]) {
             try {
                 const prompt = getPrompt("answer_questions", {questions: JSON.stringify(questions)});
 
-                const startTime = performance.now(); // Start time
+                const startTime = performance.now();
                 const response = await ollama.chat({
                     model,
                     messages: [{role: "user", content: prompt}],
                 });
-                const endTime = performance.now(); // End time
+                const endTime = performance.now();
 
                 const jsonResponse = parseModelResponse<{ answers: Record<string, string> }>(
                     response.message.content,
@@ -39,14 +40,14 @@ export async function fetchModelAnswers(models: string[], questions: string[]) {
                 if (jsonResponse.answers && typeof jsonResponse.answers === "object") {
                     responses[model] = {
                         answers: jsonResponse.answers,
-                        timeTakenMs: Math.round(endTime - startTime), // Store execution time
+                        timeTakenMs: Math.round(endTime - startTime),
                     };
                 } else {
-                    console.error(`Unexpected JSON format from ${model}:`, jsonResponse);
+                    logger.error(`Unexpected JSON format from ${model}:`, jsonResponse);
                     responses[model] = {error: "Invalid response format"};
                 }
             } catch (error) {
-                console.error(`Error fetching answers from ${model}:`, error);
+                logger.error(`Error fetching answers from ${model}:`, error);
                 responses[model] = {error: `Error: ${(error as Error).message}`};
             }
         })

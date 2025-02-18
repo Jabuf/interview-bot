@@ -19,7 +19,7 @@ export async function runBenchmark(models: string[], topic: string) {
     const rawAnswers = await fetchModelAnswers(models, allQuestions);
 
     const answers: Record<string, Record<string, string>> = {};
-    const answerTimes: Record<string, number> = {}; // Separate execution times
+    const answerTimes: Record<string, number> = {};
 
     for (const [model, response] of Object.entries(rawAnswers)) {
         if ("answers" in response) {
