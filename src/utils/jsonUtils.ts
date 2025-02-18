@@ -21,7 +21,7 @@ export function parseModelResponse<T>(response: string, fallback: T): T {
         return JSON.parse(response) as T;
     } catch (error) {
         try {
-            logger.warn({error}, "Initial JSON parse failed; attempting repair");
+            logger.warn({error, response}, "Initial JSON parse failed; attempting repair");
             const repaired = jsonrepair(response);
             return JSON.parse(repaired) as T;
         } catch (error) {

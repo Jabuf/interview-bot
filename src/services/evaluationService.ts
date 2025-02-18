@@ -16,19 +16,14 @@ type SingleEvaluation = {
  * - The top-level key is the model performing the evaluation.
  * - The nested key is the model being evaluated.
  */
-type ModelEvaluations = Record<
-    string,
-    Record<string, SingleEvaluation | { error: string }>
->;
+type ModelEvaluations = Record<string, Record<string, SingleEvaluation | { error: string }>>;
 
 /**
  * Shape of the JSON returned by an evaluator model.
+ * Now, each model directly returns a flat object, not nested under "evaluations".
  */
 interface EvaluationsApiResponse {
-    evaluations: Record<
-        string,
-        SingleEvaluation | Record<string, SingleEvaluation>
-    >;
+    [evaluatedModel: string]: SingleEvaluation;
 }
 
 /**
@@ -58,12 +53,14 @@ export async function evaluateAnswers(
                 });
                 const endTime = performance.now();
 
-                const jsonResponse = parseModelResponse<EvaluationsApiResponse>(
-                    response.message.content,
-                    {evaluations: {}}
-                );
+                const jsonResponse = parseModelResponse<EvaluationsApiResponse>(response.message.content, {});
 
-                Object.assign(evaluations, jsonResponse.evaluations);
+                // Ensure the evaluator model exists before assigning evaluations
+                if (!evaluations[model]) {
+                    evaluations[model] = {};
+                }
+
+                Object.assign(evaluations[model], jsonResponse);
                 evaluationTimes[model] = Math.round(endTime - startTime);
 
             } catch (error) {
