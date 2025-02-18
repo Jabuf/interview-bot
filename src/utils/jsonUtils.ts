@@ -1,4 +1,5 @@
 import {logger} from "./logger.js";
+import {jsonrepair} from "jsonrepair";
 
 /**
  * Cleans and parses a JSON response from a model.
@@ -19,7 +20,13 @@ export function parseModelResponse<T>(response: string, fallback: T): T {
     try {
         return JSON.parse(response) as T;
     } catch (error) {
-        logger.error({error, response}, "JSON parsing error");
-        return fallback;
+        try {
+            logger.warn({error}, "Initial JSON parse failed; attempting repair");
+            const repaired = jsonrepair(response);
+            return JSON.parse(repaired) as T;
+        } catch (error) {
+            logger.error({error, response}, "JSON parsing error");
+            return fallback;
+        }
     }
 }
