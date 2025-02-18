@@ -18,7 +18,10 @@ export async function answerRoutes(fastify: FastifyInstance) {
     });
 
     fastify.post("/evaluate", async (request, reply) => {
-        const {models, answers} = request.body as { models: string[]; answers: Record<string, string[]> };
+        const {models, answers} = request.body as {
+            models: string[];
+            answers: Record<string, Record<string, string>>;
+        };
 
         if (!models || models.length === 0) {
             return reply.status(400).send({error: "At least one model is required"});
@@ -30,6 +33,4 @@ export async function answerRoutes(fastify: FastifyInstance) {
         const evaluations = await evaluateAnswers(models, answers);
         return reply.send({evaluations});
     });
-
-
 }

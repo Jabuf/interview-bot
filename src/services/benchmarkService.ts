@@ -16,16 +16,33 @@ export async function runBenchmark(models: string[], topic: string) {
     const allQuestions = [...new Set(Object.values(questionsByModel).flat())];
 
     // Step 3: Get answers from each model
-    const answers = await fetchModelAnswers(models, allQuestions);
+    const rawAnswers = await fetchModelAnswers(models, allQuestions);
+
+    const answers: Record<string, Record<string, string>> = {};
+    const answerTimes: Record<string, number> = {}; // Separate execution times
+
+    for (const [model, response] of Object.entries(rawAnswers)) {
+        if ("answers" in response) {
+            answers[model] = response.answers;
+            answerTimes[model] = response.timeTakenMs;
+        } else {
+            answers[model] = {};
+            answerTimes[model] = -1; // Indicates an error occurred
+        }
+    }
 
     // Step 4: Evaluate the answers
-    const evaluations = await evaluateAnswers(models, answers);
+    const {evaluations, evaluationTimes} = await evaluateAnswers(models, answers);
 
     return {
         topic,
         questionsByModel,
         mergedQuestions: allQuestions,
         answers,
+        executionTimes: {
+            answers: answerTimes,
+            evaluations: evaluationTimes,
+        },
         evaluations,
     };
 }

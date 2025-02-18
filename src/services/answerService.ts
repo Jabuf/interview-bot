@@ -5,13 +5,16 @@ import {parseModelResponse} from "../utils/jsonUtils.js";
 /**
  * Represents the structure of a model's answers.
  */
-type ModelAnswers = Record<string, string> | { error: string };
+type ModelAnswers = {
+    answers: Record<string, string>;
+    timeTakenMs: number;
+} | { error: string };
 
 /**
  * Fetch answers from multiple models for a given set of questions.
  * @param models - List of model names
  * @param questions - Array of merged questions
- * @returns An object containing model responses
+ * @returns An object containing model responses and execution times
  */
 export async function fetchModelAnswers(models: string[], questions: string[]) {
     const responses: Record<string, ModelAnswers> = {};
@@ -21,18 +24,23 @@ export async function fetchModelAnswers(models: string[], questions: string[]) {
             try {
                 const prompt = getPrompt("answer_questions", {questions: JSON.stringify(questions)});
 
+                const startTime = performance.now(); // Start time
                 const response = await ollama.chat({
                     model,
                     messages: [{role: "user", content: prompt}],
                 });
+                const endTime = performance.now(); // End time
 
-                // Clean and parse response
-                const jsonResponse = parseModelResponse<{
-                    answers: Record<string, string>
-                }>(response.message.content, {answers: {}});
+                const jsonResponse = parseModelResponse<{ answers: Record<string, string> }>(
+                    response.message.content,
+                    {answers: {}}
+                );
 
                 if (jsonResponse.answers && typeof jsonResponse.answers === "object") {
-                    responses[model] = jsonResponse.answers;
+                    responses[model] = {
+                        answers: jsonResponse.answers,
+                        timeTakenMs: Math.round(endTime - startTime), // Store execution time
+                    };
                 } else {
                     console.error(`Unexpected JSON format from ${model}:`, jsonResponse);
                     responses[model] = {error: "Invalid response format"};
