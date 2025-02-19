@@ -6,11 +6,12 @@ import {evaluateAnswers} from "./evaluationService.js";
  * Runs the full benchmarking workflow.
  * @param models - List of selected models
  * @param topic - The topic to generate questions for
+ * @param num_questions - The number of questions asked (optional, defaults to 5, max 15)
  * @returns The benchmarking results including questions, answers, and evaluations
  */
-export async function runBenchmark(models: string[], topic: string) {
+export async function runBenchmark(models: string[], topic: string, num_questions: number | undefined) {
     // Step 1: Generate and merge questions
-    const questionsByModel = await fetchMergedQuestions(models, topic);
+    const questionsByModel = await fetchMergedQuestions(models, topic, num_questions);
 
     // Step 2: Flatten questions into a unique set for consistency
     const allQuestions = [...new Set(Object.values(questionsByModel).flat())];
