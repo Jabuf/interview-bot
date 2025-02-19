@@ -16,32 +16,51 @@ export const fastify = Fastify({
     }
 });
 
-// Root route
+// **Global Error Handler**
+fastify.setErrorHandler((error, request, reply) => {
+    logger.error({
+        message: error.message || "Unknown error",
+        stack: error.stack || "No stack trace",
+        route: request.routeOptions.url,
+        method: request.method,
+        body: request.body,
+        query: request.query,
+        params: request.params
+    }, "Unhandled error in Fastify route");
+
+    reply.status(error.statusCode || 500).send({error: "Internal Server Error"});
+});
+
+// **Root route**
 fastify.get("/", async () => {
     fastify.log.info("Root route accessed");
     return {message: "Interview Bot API is running!"};
 });
 
-// Register routes
-fastify.register(modelRoutes, {prefix: `${API_PREFIX}/management/models`});  // Model Management
+// **Register routes**
+fastify.register(modelRoutes, {prefix: `${API_PREFIX}/management/models`});
 fastify.register(benchmarkRoutes, {prefix: `${API_PREFIX}/benchmark`});
 fastify.register(answerRoutes, {prefix: `${API_PREFIX}/answers`});
 fastify.register(questionRoutes, {prefix: `${API_PREFIX}/questions`});
 
-// Log routes on startup
+// **Log all routes on startup**
 fastify.ready(() => {
     fastify.log.info(fastify.printRoutes());
 });
 
+// **Start server**
 const start = async () => {
     try {
         await fastify.listen({port: 3000});
 
         fastify.log.info("Server running at http://localhost:3000");
     } catch (err) {
-        fastify.log.error(err);
+        if (err instanceof Error) {
+            logger.error({message: err.message, stack: err.stack}, "Failed to start server");
+        } else {
+            logger.error({message: "Unknown error", details: err}, "Failed to start server");
+        }
         process.exit(1);
     }
 };
-
 start();
