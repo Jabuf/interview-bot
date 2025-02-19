@@ -1,6 +1,6 @@
 import {FastifyInstance} from "fastify";
-import {runBenchmark} from "../../services/benchmarkService.js";
-import {logger} from "../../utils/logger.js";
+import {runBenchmark} from "../services/benchmarkService.js";
+import {logger} from "../utils/logger.js";
 
 export async function benchmarkRoutes(fastify: FastifyInstance) {
     fastify.post("/", async (request, reply) => {

@@ -1,6 +1,6 @@
 import {FastifyInstance} from "fastify";
-import {evaluateAnswers} from "../../services/evaluationService.js";
-import {fetchModelAnswers} from "../../services/answerService.js";
+import {evaluateAnswers} from "../services/evaluationService.js";
+import {fetchModelAnswers} from "../services/answerService.js";
 
 export async function answerRoutes(fastify: FastifyInstance) {
     fastify.post("/ask", async (request, reply) => {

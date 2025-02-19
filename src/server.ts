@@ -1,9 +1,10 @@
 import Fastify from "fastify";
-import {questionRoutes} from "./routes/models/questions.js";
-import {answerRoutes} from "./routes/models/answers.js";
-import {benchmarkRoutes} from "./routes/models/benchmark.js";
+import {questionRoutes} from "./routes/questions.js";
+import {answerRoutes} from "./routes/answers.js";
+import {benchmarkRoutes} from "./routes/benchmark.js";
 import {API_PREFIX} from "./config/constants.js";
 import {logger} from "./utils/logger.js";
+import {modelRoutes} from "./routes/models.js";
 
 export const fastify = Fastify({
     logger: {
@@ -22,9 +23,10 @@ fastify.get("/", async () => {
 });
 
 // Register routes
-fastify.register(benchmarkRoutes, {prefix: `${API_PREFIX}/models/benchmark`});
-fastify.register(answerRoutes, {prefix: `${API_PREFIX}/models/answers`});
-fastify.register(questionRoutes, {prefix: `${API_PREFIX}/models/questions`});
+fastify.register(modelRoutes, {prefix: `${API_PREFIX}/management/models`});  // Model Management
+fastify.register(benchmarkRoutes, {prefix: `${API_PREFIX}/benchmark`});
+fastify.register(answerRoutes, {prefix: `${API_PREFIX}/answers`});
+fastify.register(questionRoutes, {prefix: `${API_PREFIX}/questions`});
 
 // Log routes on startup
 fastify.ready(() => {
